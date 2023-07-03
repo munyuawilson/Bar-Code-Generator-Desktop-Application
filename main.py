@@ -1,8 +1,8 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget,QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget,QPushButton,QFileDialog,QLineEdit
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt
-
+import pandas as pd
 app = QApplication(sys.argv)
 def window_1(app):
     
@@ -70,18 +70,51 @@ def window_2(app):
     # Create a QMainWindow
     window = QMainWindow()
     window.setWindowTitle("Bar Code Generator")
+    
+    central_widget = QWidget(window)
+    window.setCentralWidget(central_widget)
+    layout = QVBoxLayout(central_widget)
+    # Create a QWidget to hold the layout
+    
 
     window.setFixedSize(700, 400)
+    
+    text_entry = QLineEdit(window)
+    layout.addWidget(text_entry)
+    
     upload_button = QPushButton("Upload File", window)
     
+    upload_button.setGeometry(250, 400, 200, 50)
+    
+    upload_button.setStyleSheet("background-color:#436953;color:white;")
+    
+    # Add submit button for text-based input
+    
+    submit_text=QPushButton("Submit Text",window)
+    submit_text.setGeometry(100, 500, 200, 50)
+    submit_text.setStyleSheet("background-color:#436953;color:white;")
+    submit_text.setFixedWidth(200)
+    layout.addWidget(submit_text)
+    
+    #Add styles for all the widgets
+    
+    text_entry.setFixedHeight(100)
+
+    
+    # Set width for the QPushButton widget
+    upload_button.setFixedWidth(200)
     # Create a QVBoxLayout to hold the QLabel and text label
-    layout = QVBoxLayout()
+    
     layout.addWidget(upload_button)
     
     def upload():
         sender=window.sender()
         if sender==upload_button:
-            pass
+            file_dialog = QFileDialog()
+            file_path, _ = file_dialog.getOpenFileName(window, "Upload File")
+            if file_path:
+                # Process the selected file
+                data=pd.read_excel(file_path)
         
     upload_button.clicked.connect(upload)
     
