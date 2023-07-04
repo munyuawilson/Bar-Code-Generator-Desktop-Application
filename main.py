@@ -3,7 +3,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWid
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt
 import pandas as pd
+from genbar import *
+
 app = QApplication(sys.argv)
+
 def window_1(app):
     
 
@@ -42,7 +45,7 @@ def window_1(app):
     #add then to layout
     layout.addWidget(button_next)
     layout.addWidget(button_close)
-
+    
     
 
     #Add color
@@ -82,6 +85,12 @@ def window_2(app):
     text_entry = QLineEdit(window)
     layout.addWidget(text_entry)
     
+    # Functio for tgetting the text
+    def get_text():
+        entered_text = text_entry.text()
+        
+        
+        
     upload_button = QPushButton("Upload File", window)
     
     upload_button.setGeometry(250, 400, 200, 50)
@@ -95,7 +104,7 @@ def window_2(app):
     submit_text.setStyleSheet("background-color:#436953;color:white;")
     submit_text.setFixedWidth(200)
     layout.addWidget(submit_text)
-    
+    submit_text.clicked.connect(get_text)
     #Add styles for all the widgets
     
     text_entry.setFixedHeight(100)
