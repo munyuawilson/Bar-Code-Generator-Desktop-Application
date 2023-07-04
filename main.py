@@ -45,7 +45,7 @@ def window_1(app):
     #add then to layout
     layout.addWidget(button_next)
     layout.addWidget(button_close)
-    
+
     
 
     #Add color
@@ -88,6 +88,8 @@ def window_2(app):
     # Functio for tgetting the text
     def get_text():
         entered_text = text_entry.text()
+        generate_barcode(entered_text)
+    
         
         
         
