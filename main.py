@@ -4,6 +4,8 @@ from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt
 import pandas as pd
 from genbar import *
+from download import *
+
 
 app = QApplication(sys.argv)
 
@@ -85,10 +87,19 @@ def window_2(app):
     text_entry = QLineEdit(window)
     layout.addWidget(text_entry)
     
-    # Functio for tgetting the text
+    #Download button
+    download_output=QPushButton("download",window)
+    download_output.setGeometry(200, 500, 200, 50)
+    download_output.setStyleSheet("background-color:#436953;color:white;")
+    download_output.setFixedWidth(200)
+    
+    # Function for tgetting the text
     def get_text():
         entered_text = text_entry.text()
         generate_barcode(entered_text)
+        
+        layout.addWidget(download_output)
+        download_output.clicked.connect(get_text)
     
         
         
