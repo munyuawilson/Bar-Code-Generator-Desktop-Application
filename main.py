@@ -1,13 +1,13 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget,QPushButton,QFileDialog,QLineEdit
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget,QPushButton,QFileDialog,QLineEdit,QHBoxLayout
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt
 import pandas as pd
 from genbar import *
 from download import *
 import os
-from docx import Document
-from docx.shared import Inches
+
+import zipfile
 from PIL import Image
 # Get the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -42,7 +42,8 @@ def window_1(app):
     text_label.setFont(QFont("Arial", 14))  # Increase font size (adjust as needed)
     text_label.setMargin(1)  # Adjust the margin around the text label
     layout.addWidget(text_label)
-
+    
+    
     # Create a QWidget to hold the layout
     central_widget = QWidget()
     central_widget.setLayout(layout)
@@ -83,17 +84,25 @@ def window_2(app):
     # Create a QMainWindow
     window = QMainWindow()
     window.setWindowTitle("Bar Code Generator")
-    
-    central_widget = QWidget(window)
-    window.setCentralWidget(central_widget)
-    layout = QVBoxLayout(central_widget)
-    # Create a QWidget to hold the layout
-    
-
     window.setFixedSize(700, 400)
+    layout = QVBoxLayout()
+    
+    central_widget = QWidget()
+    central_widget.setLayout(layout)
+    window.setCentralWidget(central_widget)
+    
+    
+    
+    # Add a label for the instruction on Uploading
+    
+    
+    
+    
     
     text_entry = QLineEdit(window)
+    
     layout.addWidget(text_entry)
+    
     
     #Download button
     download_output=QPushButton("download",window)
@@ -105,12 +114,18 @@ def window_2(app):
     def get_text():
         
         entered_text = text_entry.text()
-        generate_barcode(entered_text)
+        image_name=generate_barcode(entered_text)
+        list_images=[image_name+".png"]
+        
+        zip_files(list_images, 'barcodes.zip')
+        for image in list_images:
+            os.remove(image) 
+        
         
         layout.addWidget(download_output)
         
     
-    download_output.clicked.connect(lambda: downloadFile(os.path.join(current_dir, f"barcode_{text_entry.text()}.png")))   
+    download_output.clicked.connect(lambda: downloadFile(os.path.join(current_dir, "barcodes.zip")))   
          
         
     upload_button = QPushButton("Upload File", window)
@@ -122,7 +137,7 @@ def window_2(app):
     # Add submit button for text-based input
     
     submit_text=QPushButton("Generate",window)
-    submit_text.setGeometry(100, 500, 200, 50)
+    
     submit_text.setStyleSheet("background-color:#436953;color:white;")
     submit_text.setFixedWidth(200)
     layout.addWidget(submit_text)
@@ -139,8 +154,14 @@ def window_2(app):
     
     layout.addWidget(upload_button)
     
-    choose_column=QLineEdit()
     
+    
+    
+    choose_column=QLineEdit()
+    def zip_files(file_paths, zip_name):
+        with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for file in file_paths:
+                zipf.write(file,os.path.basename(file))
     def upload():
         sender=window.sender()
         if sender==upload_button:
@@ -148,50 +169,25 @@ def window_2(app):
             file_path, _ = file_dialog.getOpenFileName(window, "Upload File")
             if file_path:
                 # Process the selected file
-                data=pd.read_excel(file_path,index_col=0)
-                layout.addWidget(choose_column)
-                column = choose_column.text()
+                data=pd.read_excel(file_path)
                 
+                list_images=[]
                 
-                
-                
-                
-                for i in data.fgsdvgh:
+                for i in data.barcode:
                     print(i)
                     image_name=generate_barcode(i)
-                    
                     image_fullname=image_name+".png"
+                    list_images.append(image_fullname)
                     print(image_fullname)
-                    # Create a new Word document
-                    doc = Document()
-
-                    # Path to the image file
-                    image_path = image_fullname # Replace with the actual image file path
-
-                    # Load the image using Pillow
-                    image = Image.open(image_path)
+                    zip_files(list_images, 'barcodes.zip')
                     
+                    
+                for image in list_images:
+                    os.remove(image)   
+                layout.addWidget(download_output)   
 
                     # Calculate the desired width and height for the image in the Word document
-                    max_width = Inches(6)  # Maximum width for the image in inches
-                    max_height = Inches(4)  # Maximum height for the image in inches
-
-                    width, height = image.size
-                    if width > max_width:
-                        height = int(max_width / width * height)
-                        width = max_width
-                    if height > max_height:
-                        width = int(max_height / height * width)
-                        height = max_height
                     
-                    png_path = 'converted_image.png'
-                    image.save(png_path, format='PNG')
-
-                    # Add the image to the Word document
-                    doc.add_picture(png_path, width=width, height=height)
-
-                    # Save the document
-                    doc.save('output.docx')
                 
 
     upload_button.clicked.connect(upload)
