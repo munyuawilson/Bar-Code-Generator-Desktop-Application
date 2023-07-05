@@ -5,7 +5,15 @@ from PyQt5.QtCore import Qt
 import pandas as pd
 from genbar import *
 from download import *
+import os
+from docx import Document
+from docx.shared import Inches
+from PIL import Image
+# Get the current directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
+# Set the current directory
+os.chdir(current_dir)
 
 app = QApplication(sys.argv)
 
@@ -95,14 +103,15 @@ def window_2(app):
     
     # Function for tgetting the text
     def get_text():
+        
         entered_text = text_entry.text()
         generate_barcode(entered_text)
         
         layout.addWidget(download_output)
-        download_output.clicked.connect(get_text)
+        
     
-        
-        
+    download_output.clicked.connect(lambda: downloadFile(os.path.join(current_dir, f"barcode_{text_entry.text()}.png")))   
+         
         
     upload_button = QPushButton("Upload File", window)
     
@@ -112,12 +121,13 @@ def window_2(app):
     
     # Add submit button for text-based input
     
-    submit_text=QPushButton("Submit Text",window)
+    submit_text=QPushButton("Generate",window)
     submit_text.setGeometry(100, 500, 200, 50)
     submit_text.setStyleSheet("background-color:#436953;color:white;")
     submit_text.setFixedWidth(200)
     layout.addWidget(submit_text)
     submit_text.clicked.connect(get_text)
+    
     #Add styles for all the widgets
     
     text_entry.setFixedHeight(100)
@@ -129,6 +139,8 @@ def window_2(app):
     
     layout.addWidget(upload_button)
     
+    choose_column=QLineEdit()
+    
     def upload():
         sender=window.sender()
         if sender==upload_button:
@@ -136,8 +148,52 @@ def window_2(app):
             file_path, _ = file_dialog.getOpenFileName(window, "Upload File")
             if file_path:
                 # Process the selected file
-                data=pd.read_excel(file_path)
-        
+                data=pd.read_excel(file_path,index_col=0)
+                layout.addWidget(choose_column)
+                column = choose_column.text()
+                
+                
+                
+                
+                
+                for i in data.fgsdvgh:
+                    print(i)
+                    image_name=generate_barcode(i)
+                    
+                    image_fullname=image_name+".png"
+                    print(image_fullname)
+                    # Create a new Word document
+                    doc = Document()
+
+                    # Path to the image file
+                    image_path = image_fullname # Replace with the actual image file path
+
+                    # Load the image using Pillow
+                    image = Image.open(image_path)
+                    
+
+                    # Calculate the desired width and height for the image in the Word document
+                    max_width = Inches(6)  # Maximum width for the image in inches
+                    max_height = Inches(4)  # Maximum height for the image in inches
+
+                    width, height = image.size
+                    if width > max_width:
+                        height = int(max_width / width * height)
+                        width = max_width
+                    if height > max_height:
+                        width = int(max_height / height * width)
+                        height = max_height
+                    
+                    png_path = 'converted_image.png'
+                    image.save(png_path, format='PNG')
+
+                    # Add the image to the Word document
+                    doc.add_picture(png_path, width=width, height=height)
+
+                    # Save the document
+                    doc.save('output.docx')
+                
+
     upload_button.clicked.connect(upload)
     
     

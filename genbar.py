@@ -10,4 +10,4 @@ def generate_barcode(text, barcode_type='code128'):
 
     # Save the barcode image
     barcode_object.save(filename)
-    
+    return filename
