@@ -1,14 +1,67 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget,QPushButton,QFileDialog,QLineEdit,QHBoxLayout
-from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtGui import QPixmap, QFont,QIcon
 from PyQt5.QtCore import Qt
 import pandas as pd
-from genbar import *
-from download import *
 import os
-
 import zipfile
+import barcode
+from barcode.writer import ImageWriter
 from PIL import Image
+
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog
+import shutil
+
+
+def downloadFile(path):
+    
+    # Specify the path and filename of the file to be downloaded
+    
+
+    # Prompt the user to select the download location
+    save_path, _ = QFileDialog.getSaveFileName(None, "Save File", "", "Zip Files (*.zip)")
+
+    if save_path:
+        try:
+            
+            shutil.copy(path, save_path)
+            print("File downloaded successfully.")
+        except Exception as e:
+            print("Error while downloading file:", str(e))
+    else:
+        print("Download canceled.")
+def generate_barcode(text, barcode_type='code128'):
+    # Create a barcode object
+    barcode_class = barcode.get_barcode_class(barcode_type)
+    barcode_object = barcode_class(text, writer=ImageWriter())
+
+    # Set the filename for the barcode image
+    filename = f'barcode_{text}'
+
+    # Save the barcode image
+    barcode_object.save(filename)
+    image = Image.open(filename+".png")
+
+    # Crop the image to the desired size
+    width, height = image.size
+    desired_width = 256
+    desired_height = 186
+    x = (width - desired_width) // 2
+    y = (height - desired_height) // 2
+    
+    image.thumbnail((desired_width, desired_height), Image.LANCZOS)
+
+    # Save the cropped image
+    image.save(filename+".png")
+    return filename
+
+
+if getattr(sys, 'frozen', False):
+    # If the application is run as a bundle (e.g., PyInstaller executable)
+    logo_path = sys._MEIPASS + '/logo.png'  # Update 'logo.png' to the name of your logo file
+else:
+    # If the application is run as a standalone script
+    logo_path = 'logo.png' 
 # Get the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -25,6 +78,7 @@ def window_1(app):
     window.setWindowTitle("Bar Code Generator")
 
     window.setFixedSize(700, 400)
+    window.setWindowIcon(QIcon('logo.ico'))
 
     # Create a QVBoxLayout to hold the QLabel and text label
     layout = QVBoxLayout()
@@ -85,6 +139,7 @@ def window_2(app):
     window = QMainWindow()
     window.setWindowTitle("Bar Code Generator")
     window.setFixedSize(700, 400)
+    window.setWindowIcon(QIcon('logo.ico'))
     layout = QVBoxLayout()
     
     central_widget = QWidget()
@@ -105,7 +160,7 @@ def window_2(app):
     
     
     #Download button
-    download_output=QPushButton("download",window)
+    download_output=QPushButton("Download",window)
     download_output.setGeometry(200, 500, 200, 50)
     download_output.setStyleSheet("background-color:#436953;color:white;")
     download_output.setFixedWidth(200)
@@ -122,12 +177,11 @@ def window_2(app):
             os.remove(image) 
         
         
-        layout.addWidget(download_output)
+        
         
     
     download_output.clicked.connect(lambda: downloadFile(os.path.join(current_dir, "barcodes.zip")))   
-         
-        
+    
     upload_button = QPushButton("Upload File", window)
     
     upload_button.setGeometry(250, 400, 200, 50)
@@ -141,7 +195,9 @@ def window_2(app):
     submit_text.setStyleSheet("background-color:#436953;color:white;")
     submit_text.setFixedWidth(200)
     layout.addWidget(submit_text)
-    submit_text.clicked.connect(get_text)
+    
+    submit_text.clicked.connect(lambda:get_text())
+    
     
     #Add styles for all the widgets
     
@@ -153,6 +209,8 @@ def window_2(app):
     # Create a QVBoxLayout to hold the QLabel and text label
     
     layout.addWidget(upload_button)
+    layout.addWidget(download_output)  
+        
     
     
     
