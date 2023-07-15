@@ -233,7 +233,7 @@ def window_2(app):
                 
                 for i in data.barcode:
                     print(i)
-                    image_name=generate_barcode(i)
+                    image_name=generate_barcode(str(i))
                     image_fullname=image_name+".png"
                     list_images.append(image_fullname)
                     print(image_fullname)
