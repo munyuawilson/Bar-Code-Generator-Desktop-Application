@@ -5,6 +5,8 @@ from PyQt5.QtCore import Qt
 import pandas as pd
 import xlsxwriter
 import os
+
+
 import zipfile
 from io import BytesIO
 import barcode
@@ -15,6 +17,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import keras_ocr
 import math
+from barcode.writer import SVGWriter
+
 
 
 
@@ -58,22 +62,42 @@ def downloadFile(Input,path):
                 print("Error while downloading file:", str(e))
         else:
             print("Download canceled.")
+            
         
-def generate_barcode(text, barcode_type='code128'):
-    # Create a barcode object
-    barcode_class = barcode.get_barcode_class(barcode_type)
-    barcode_object = barcode_class(text, writer=ImageWriter())
-    
-
-    # Set the filename for the barcode image
-    
+def generate_barcode(text, barcode_type='code39'):
     text=str(text)
     text=text.replace('\n', '')
     
     text=text.replace(' ', '')
+    text=text.replace('NaN','')
+    '''
+    # Create a barcode object
+    barcode_class = barcode.get_barcode_class(barcode_type)
+    barcode_object = barcode_class(text, writer=ImageWriter,add_checksum=False)'''
+    
+    barcode_object=barcode.Code39(text)
+    
+    barcode_object.writer=ImageWriter()
+    image=barcode_object.render(text='')
+    filename = f'barcode_{text}'
+    image.save(filename+'.png')
+    
+    
+    
+
+    # Set the filename for the barcode image
+    
+    
     print(text)
+    '''
     filename = f'barcode_{text}'
     barcode_object.save(filename)
+    barcode_object.save('text')
+    
+    
+    
+    
+    
     
     image = cv2.imread(filename+".png")
     def midpoint(x1, y1, x2, y2):
@@ -124,12 +148,12 @@ def generate_barcode(text, barcode_type='code128'):
 
     cv2.imwrite(filename+'.png', cv2.cvtColor(img_text_removed, cv2.COLOR_BGR2RGB))
     image=Image.open(filename+'.png')
-    width = 50
-    height = 50
+    width = 150
+    height = 150
 
     # Resize the image
     image = image.resize((width, height))
-    image.save(filename+".png")
+    image.save(filename+".png")'''
     return filename+".png"
 
 
@@ -334,6 +358,9 @@ def window_2(app):
 
                 
                 workbook.close()
+            import openpyxl
+            from openpyxl.utils.dataframe import dataframe_to_rows
+
             file_path = 'result.xlsx'
             wb = openpyxl.load_workbook(file_path)
 
@@ -345,7 +372,7 @@ def window_2(app):
             start_row = ws.max_row + 1  # Start from the next available row
 
             # Step 4: Convert the DataFrame to rows
-            rows = list(dataframe_to_rows(data, index=False, header=False))
+            rows = list(dataframe_to_rows(data, index=False, header=True))
 
             # Step 5: Insert the rows into the worksheet
             for row in rows:
