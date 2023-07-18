@@ -325,7 +325,7 @@ def window_2(app):
                 
 
                 
-                data = pd.read_excel(file_path)
+                data = pd.read_excel(file_path,header=0)
                 image_list = []
 
                 # Generate images and store their paths
@@ -370,7 +370,7 @@ def window_2(app):
 
             # Step 3: Determine the starting cell for inserting the DataFrame
             start_row = ws.max_row + 1  # Start from the next available row
-
+            print(data.columns)
             # Step 4: Convert the DataFrame to rows
             rows = list(dataframe_to_rows(data, index=False, header=True))
 
