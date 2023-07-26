@@ -5,18 +5,17 @@ from PyQt5.QtCore import Qt
 import pandas as pd
 import xlsxwriter
 import os
-
-
+import zlib
+import re
 import zipfile
 from io import BytesIO
 import barcode
 from barcode.writer import ImageWriter
 from PIL import Image
-import cv2
+
 import numpy as np
 import matplotlib.pyplot as plt
-import keras_ocr
-import math
+
 from barcode.writer import SVGWriter
 
 
@@ -62,23 +61,31 @@ def downloadFile(Input,path):
                 print("Error while downloading file:", str(e))
         else:
             print("Download canceled.")
+            os.remove(path)
             
         
-def generate_barcode(text, barcode_type='code39'):
+def generate_barcode(text, barcode_type='code128'):
+
     text=str(text)
     text=text.replace('\n', '')
     
     text=text.replace(' ', '')
+    text=text.replace(':', '')
+    pattern = r'[^a-zA-Z0-9\s]'  # Keep alphabets, numbers, and whitespaces
+
+    # Use the sub() function from the re module to remove non-text characters
+    
     text=text.replace('NaN','')
+    cleaned_text = re.sub(pattern, '', text)
+    print(cleaned_text)
     '''
     # Create a barcode object
     barcode_class = barcode.get_barcode_class(barcode_type)
     barcode_object = barcode_class(text, writer=ImageWriter,add_checksum=False)'''
     
-    barcode_object=barcode.Code39(text)
-    
+    barcode_object=barcode.Code39(cleaned_text,add_checksum=False)    
     barcode_object.writer=ImageWriter()
-    image=barcode_object.render(text='')
+    image=barcode_object.render({'module_width': 0.1, 'module_height': 20,'font_size': 10},text='')
     filename = f'barcode_{text}'
     image.save(filename+'.png')
     
@@ -88,7 +95,7 @@ def generate_barcode(text, barcode_type='code39'):
     # Set the filename for the barcode image
     
     
-    print(text)
+    
     '''
     filename = f'barcode_{text}'
     barcode_object.save(filename)
@@ -327,12 +334,14 @@ def window_2(app):
                 
                 data = pd.read_excel(file_path,header=0)
                 image_list = []
-
+                
                 # Generate images and store their paths
-                for index, row in data.iterrows():
+                for index, row in data.iloc[1:].iterrows():
+                    print(str(row.to_string()))
                     
                     
                     image_name = generate_barcode(str(row.to_string(index=False)))
+                    
                     image_list.append(image_name)
 
                 # Create the result workbook and worksheet
@@ -342,6 +351,7 @@ def window_2(app):
                 # Iterate over the images and insert them into the worksheet
                 for i, image_name in enumerate(image_list):
                     filename = image_name
+                    print(filename)
 
                     file = open(filename, 'rb')
                     data_ = BytesIO(file.read())
@@ -372,7 +382,7 @@ def window_2(app):
             start_row = ws.max_row + 1  # Start from the next available row
             print(data.columns)
             # Step 4: Convert the DataFrame to rows
-            rows = list(dataframe_to_rows(data, index=False, header=True))
+            rows = list(dataframe_to_rows(data.iloc[0:], index=False, header=False))
 
             # Step 5: Insert the rows into the worksheet
             for row in rows:
