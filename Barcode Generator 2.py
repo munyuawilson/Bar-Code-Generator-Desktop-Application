@@ -64,7 +64,7 @@ def downloadFile(Input,path):
             os.remove(path)
             
         
-def generate_barcode(text, barcode_type='code128'):
+def generate_barcode(text, number='',barcode_type='code128'):
 
     text=str(text)
     text=text.replace('\n', '')
@@ -83,9 +83,9 @@ def generate_barcode(text, barcode_type='code128'):
     barcode_class = barcode.get_barcode_class(barcode_type)
     barcode_object = barcode_class(text, writer=ImageWriter,add_checksum=False)'''
     
-    barcode_object=barcode.Code39(cleaned_text,add_checksum=False)    
+    barcode_object=barcode.Code128(cleaned_text)    
     barcode_object.writer=ImageWriter()
-    image=barcode_object.render({'module_width': 0.1, 'module_height': 20,'font_size': 10},text='')
+    image=barcode_object.render({'module_width': 0.1, 'module_height': 15,'font_size': 10},text=number)
     filename = f'barcode_{text}'
     image.save(filename+'.png')
     
@@ -96,71 +96,7 @@ def generate_barcode(text, barcode_type='code128'):
     
     
     
-    '''
-    filename = f'barcode_{text}'
-    barcode_object.save(filename)
-    barcode_object.save('text')
-    
-    
-    
-    
-    
-    
-    image = cv2.imread(filename+".png")
-    def midpoint(x1, y1, x2, y2):
-        x_mid = int((x1 + x2)/2)
-        y_mid = int((y1 + y2)/2)
-        return (x_mid, y_mid)
 
-    #Main function that detects text and inpaints. 
-    #Inputs are the image path and kreas_ocr pipeline
-    def inpaint_text(img_path, pipeline):
-        # read the image 
-        img = keras_ocr.tools.read(img_path) 
-        
-        # Recogize text (and corresponding regions)
-        # Each list of predictions in prediction_groups is a list of
-        # (word, box) tuples. 
-        prediction_groups = pipeline.recognize([img])
-        
-        #Define the mask for inpainting
-        mask = np.zeros(img.shape[:2], dtype="uint8")
-        for box in prediction_groups[0]:
-            x0, y0 = box[1][0]
-            x1, y1 = box[1][1] 
-            x2, y2 = box[1][2]
-            x3, y3 = box[1][3] 
-            
-            x_mid0, y_mid0 = midpoint(x1, y1, x2, y2)
-            x_mid1, y_mi1 = midpoint(x0, y0, x3, y3)
-            
-            #For the line thickness, we will calculate the length of the line between 
-            #the top-left corner and the bottom-left corner.
-            thickness = int(math.sqrt( (x2 - x1)**2 + (y2 - y1)**2 ))
-            
-            #Define the line and inpaint
-            cv2.line(mask, (x_mid0, y_mid0), (x_mid1, y_mi1), 255,    
-            thickness)
-            inpainted_img = cv2.inpaint(img, mask, 7, cv2.INPAINT_NS)
-                    
-        return(inpainted_img)
-
-    # keras-ocr will automatically download pretrained
-    # weights for the detector and recognizer.
-    pipeline = keras_ocr.pipeline.Pipeline()
-
-    img_text_removed = inpaint_text(filename+'.png', pipeline)
-
-    plt.imshow(img_text_removed)
-
-    cv2.imwrite(filename+'.png', cv2.cvtColor(img_text_removed, cv2.COLOR_BGR2RGB))
-    image=Image.open(filename+'.png')
-    width = 150
-    height = 150
-
-    # Resize the image
-    image = image.resize((width, height))
-    image.save(filename+".png")'''
     return filename+".png"
 
 
@@ -317,10 +253,7 @@ def window_2(app):
     
     
     
-    def zip_files(file_paths, zip_name):
-        with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            for file in file_paths:
-                zipf.write(file,os.path.basename(file))
+    
     def upload():
         sender=window.sender()
         if sender==upload_button:
@@ -334,15 +267,16 @@ def window_2(app):
                 
                 data = pd.read_excel(file_path,header=0)
                 image_list = []
-                
+                number=2
                 # Generate images and store their paths
                 for index, row in data.iloc[1:].iterrows():
                     print(str(row.to_string()))
                     
                     
-                    image_name = generate_barcode(str(row.to_string(index=False)))
+                    image_name = generate_barcode(str(row.to_string(index=False)),str(number))
                     
                     image_list.append(image_name)
+                    number+=1
 
                 # Create the result workbook and worksheet
                 workbook = xlsxwriter.Workbook("result.xlsx")
@@ -382,7 +316,7 @@ def window_2(app):
             start_row = ws.max_row + 1  # Start from the next available row
             print(data.columns)
             # Step 4: Convert the DataFrame to rows
-            rows = list(dataframe_to_rows(data.iloc[0:], index=False, header=False))
+            rows = list(dataframe_to_rows(data.iloc[0:], index=False, header=True))
 
             # Step 5: Insert the rows into the worksheet
             for row in rows:
@@ -397,20 +331,7 @@ def window_2(app):
             downloadFile(Input,filepath)
 
                         
-        '''for i in data.barcode:
-                            print(i)
-                            image_name=generate_barcode(i)
-                            image_fullname=image_name+".png"
-                            list_images.append(image_fullname)
-                            print(image_fullname)
-                            zip_files(list_images, 'barcodes.zip')
-                            
-                            
-                        for image in list_images:
-                            os.remove(image)   
-                        layout.addWidget(download_output)   '''
 
-                            # Calculate the desired width and height for the image in the Word document
                     
                 
 
