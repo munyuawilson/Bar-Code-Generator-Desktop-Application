@@ -60,7 +60,18 @@ def downloadFile(Input,path):
 def generate_barcode(text, number='',barcode_type='code128'):
 
     text=str(text)
+    d={
+        'barcode':500000000,
+        "name":"test"
+    }
+    
+    data=pd.DataFrame(d,index=range(len(d)))
+    data.to_csv('barcode.csv')
+    
+    
+    
     text=text.replace('\n', '')
+    
     
     text=text.replace(' ', '')
     text=text.replace(':', '')
@@ -76,9 +87,9 @@ def generate_barcode(text, number='',barcode_type='code128'):
     barcode_class = barcode.get_barcode_class(barcode_type)
     barcode_object = barcode_class(text, writer=ImageWriter,add_checksum=False)'''
     
-    barcode_object=barcode.Code128(cleaned_text)    
+    barcode_object=barcode.EAN8('648483883')    
     barcode_object.writer=ImageWriter()
-    image=barcode_object.render({'module_width': 0.1, 'module_height': 15,'font_size': 10},text=number)
+    image=barcode_object.render()
     filename = f'barcode_{text}'
     image.save(filename+'.png')
     
