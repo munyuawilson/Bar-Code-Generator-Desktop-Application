@@ -9,7 +9,9 @@ import re
 from io import BytesIO
 import barcode
 from barcode.writer import ImageWriter
-
+import requests
+import firebase_admin
+from firebase_admin import credentials,storage
 
 
 
@@ -60,14 +62,20 @@ def downloadFile(Input,path):
 def generate_barcode(text, number='',barcode_type='code128'):
 
     text=str(text)
-    d={
-        'barcode':500000000,
-        "name":"test"
-    }
+    data=pd.read_csv('barcode.csv',index_col=False)
     
-    data=pd.DataFrame(d,index=range(len(d)))
+
+    last_row=data.iloc[-1,0]
+    number=last_row+1
+    
+    data.loc[len(data.index)]=[number,text]
+    
+    print(data)
     data.to_csv('barcode.csv')
     
+    if requests.get('https://google.com'):
+        
+        
     
     
     text=text.replace('\n', '')
