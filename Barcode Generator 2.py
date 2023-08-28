@@ -19,6 +19,9 @@ from firebase_admin import credentials,storage
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog
 import shutil
 
+cred=credentials.Certificate("techie-9eft-firebase-adminsdk-v98cy-9e1660e817.json")
+firebase_admin.initialize_app(cred,{'storageBucket': 'techie-9eft.appspot.com'})
+
 
 def downloadFile(Input,path):
     if Input=="text":
@@ -71,9 +74,14 @@ def generate_barcode(text, number='',barcode_type='code128'):
     data.loc[len(data.index)]=[number,text]
     
     print(data)
-    data.to_csv('barcode.csv')
+    data.to_csv('barcode.csv',index=False)
+    file_path='barcode.csv'
     
-    if requests.get('https://google.com'):
+    
+    file_path = "barcode.csv"
+    bucket = storage.bucket() # storage bucket
+    blob = bucket.blob(file_path)
+    blob.upload_from_filename(file_path)
         
         
     
