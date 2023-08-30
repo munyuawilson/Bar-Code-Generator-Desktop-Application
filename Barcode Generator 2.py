@@ -73,12 +73,12 @@ def generate_barcode(text, number='',barcode_type='code128'):
     
     data.loc[len(data.index)]=[number,text]
     
-    print(data)
+    
     data.to_csv('barcode.csv',index=False)
     file_path='barcode.csv'
     
     
-    file_path = "barcode.csv"
+    
     bucket = storage.bucket() # storage bucket
     blob = bucket.blob(file_path)
     blob.upload_from_filename(file_path)
@@ -102,8 +102,8 @@ def generate_barcode(text, number='',barcode_type='code128'):
     # Create a barcode object
     barcode_class = barcode.get_barcode_class(barcode_type)
     barcode_object = barcode_class(text, writer=ImageWriter,add_checksum=False)'''
-    
-    barcode_object=barcode.EAN8('648483883')    
+    print(str(number))
+    barcode_object=barcode.EAN8(str(number))    
     barcode_object.writer=ImageWriter()
     image=barcode_object.render()
     filename = f'barcode_{text}'
