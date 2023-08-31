@@ -103,7 +103,7 @@ def generate_barcode(text, number='',barcode_type='code128'):
     barcode_class = barcode.get_barcode_class(barcode_type)
     barcode_object = barcode_class(text, writer=ImageWriter,add_checksum=False)'''
     print(str(number))
-    barcode_object=barcode.EAN8(str(number))    
+    barcode_object=barcode.EAN13(str(number))    
     barcode_object.writer=ImageWriter()
     image=barcode_object.render()
     filename = f'barcode_{text}'
